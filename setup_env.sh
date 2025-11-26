@@ -7,6 +7,7 @@ set -euo pipefail
 sudo apt-get update -y
 sudo apt-get upgrade -y
 
+echo "Installing Basic system update & utilities..."
 # Core tools for dev & deployment
 sudo apt-get install -y \
     git \                # version control
@@ -19,6 +20,7 @@ sudo apt-get install -y \
 # ================================
 # Python & DB-related tools
 # ================================
+echo "Installing Python & DB-related tools..."
 sudo apt-get install -y \
     python3 \
     python3-venv \
@@ -30,15 +32,18 @@ sudo apt-get install -y \
     default-mysql-client
 
 # ================================
-# (Optional) Reverse proxy/web server
+# Reverse proxy/web server
 # ================================
 # Serve FastAPI via Nginx + uvicorn/gunicorn in production
+echo "Installing proxy/web server..."
+
 sudo apt-get install -y nginx
 
 # ================================
 # Project setup (backend)
 # ================================
 # Adjust this path to wherever you want your backend code to live
+echo "Setting up project workspace proxy/web server..."
 PROJECT_DIR="$(pwd)"
 echo "PROJECT_DIR = $PROJECT_DIR"
 # # If the directory doesn't exist yet, create it (or git clone into it later)
@@ -62,6 +67,7 @@ pip install --upgrade pip setuptools wheel
 # ================================
 # Install Python dependencies
 # ================================
+echo "Installing Python dependencies from requirements.txt..."
 if [[ ! -f "requirements.txt" ]]; then
   echo "requirements.txt not found in $PROJECT_DIR"
   echo "Make sure your FastAPI project (with requirements.txt) is in this directory, then run 'pip install -r requirements.txt'"
