@@ -1,6 +1,6 @@
 # TeamACIDic_project
 ![TeamACIDic](images/ACIDic_Logo.png)
-Project doc: https://docs.google.com/document/d/1WY4ALovNJv5t4SEwaWG5zI3_QrCwy11lVYwD0qNOGjk/edit?usp=sharing
+Project doc: [Link](https://docs.google.com/document/d/1KOwQlmOzraVL-2klA4cSM-j70bPivSmTgC_P4Kbr2zo/edit?usp=sharing)
 
 
 Database Schema:
