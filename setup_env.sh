@@ -9,13 +9,7 @@ sudo apt-get upgrade -y
 
 echo "Installing Basic system update & utilities..."
 # Core tools for dev & deployment
-sudo apt-get install -y \
-    git \                # version control
-    curl \               # handy for API testing / downloads
-    wget \               # same as above
-    unzip \              # for handling zip files
-    build-essential \    # compilers, in case any pip packages need it
-    pkg-config
+sudo apt-get install -y git curl wget unzip build-essential pkg-config
 
 # ================================
 # Python & DB-related tools
