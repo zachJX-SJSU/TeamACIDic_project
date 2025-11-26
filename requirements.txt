@@ -5,3 +5,8 @@ pydantic>=2.0
 python-dotenv
 pymysql
 passlib[bcrypt]
+
+# Testing
+pytest
+pytest-cov
+httpx

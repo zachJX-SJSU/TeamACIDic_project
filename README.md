@@ -10,3 +10,12 @@ Employees_dev.sql is the samller database for dev, load them into mysql with:
 
 
 `mysql -u root -p < employees_dev.sql`
+
+
+For testing, run the following:
+
+`source .venv/bin/activate`
+
+`pytest`
+# or with coverage:
+`pytest --cov=app`
