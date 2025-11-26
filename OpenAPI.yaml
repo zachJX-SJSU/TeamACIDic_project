@@ -1,0 +1,666 @@
+openapi: 3.0.3
+info:
+  title: HR Portal API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+
+paths:
+  /employees:
+    get:
+      summary: List employees
+      operationId: listEmployees
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+    post:
+      summary: Create employee
+      operationId: createEmployee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeCreate'
+      responses:
+        '201':
+          description: Employee created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+
+  /employees/{emp_no}:
+    get:
+      summary: Get employee by ID
+      operationId: getEmployee
+      parameters:
+        - in: path
+          name: emp_no
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Employee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '404':
+          description: Employee not found
+    put:
+      summary: Update employee
+      operationId: updateEmployee
+      parameters:
+        - in: path
+          name: emp_no
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeUpdate'
+      responses:
+        '200':
+          description: Updated employee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '404':
+          description: Employee not found
+    delete:
+      summary: Delete employee
+      operationId: deleteEmployee
+      parameters:
+        - in: path
+          name: emp_no
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Employee deleted
+        '404':
+          description: Employee not found
+
+  /departments:
+    get:
+      summary: List departments
+      operationId: listDepartments
+      responses:
+        '200':
+          description: List of departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
+    post:
+      summary: Create department
+      operationId: createDepartment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentCreate'
+      responses:
+        '201':
+          description: Department created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+
+  /departments/{dept_no}:
+    get:
+      summary: Get department by ID
+      operationId: getDepartment
+      parameters:
+        - in: path
+          name: dept_no
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Department
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+        '404':
+          description: Department not found
+    put:
+      summary: Update department
+      operationId: updateDepartment
+      parameters:
+        - in: path
+          name: dept_no
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentUpdate'
+      responses:
+        '200':
+          description: Updated department
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+        '404':
+          description: Department not found
+    delete:
+      summary: Delete department
+      operationId: deleteDepartment
+      parameters:
+        - in: path
+          name: dept_no
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Department deleted
+        '404':
+          description: Department not found
+
+  /leave-requests:
+    get:
+      summary: List leave requests
+      operationId: listLeaveRequests
+      parameters:
+        - in: query
+          name: emp_no
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, REJECTED, CANCELLED]
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of leave requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaveRequest'
+    post:
+      summary: Create leave request
+      operationId: createLeaveRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestCreate'
+      responses:
+        '201':
+          description: Leave request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+
+  /leave-requests/{leave_id}:
+    get:
+      summary: Get leave request by ID
+      operationId: getLeaveRequest
+      parameters:
+        - in: path
+          name: leave_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Leave request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+        '404':
+          description: Leave request not found
+    put:
+      summary: Update leave request
+      operationId: updateLeaveRequest
+      parameters:
+        - in: path
+          name: leave_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequestUpdate'
+      responses:
+        '200':
+          description: Updated leave request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveRequest'
+        '404':
+          description: Leave request not found
+    delete:
+      summary: Delete leave request
+      operationId: deleteLeaveRequest
+      parameters:
+        - in: path
+          name: leave_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Leave request deleted
+        '404':
+          description: Leave request not found
+
+  /leave-quotas:
+    get:
+      summary: List leave quotas
+      operationId: listLeaveQuotas
+      parameters:
+        - in: query
+          name: emp_no
+          schema:
+            type: integer
+        - in: query
+          name: year
+          schema:
+            type: integer
+        - in: query
+          name: leave_type_id
+          schema:
+            type: integer
+            enum: [2]
+      responses:
+        '200':
+          description: List of leave quotas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LeaveQuota'
+    post:
+      summary: Create leave quota
+      operationId: createLeaveQuota
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveQuotaCreate'
+      responses:
+        '201':
+          description: Leave quota created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveQuota'
+
+  /leave-quotas/{emp_no}/{year}/{leave_type_id}:
+    get:
+      summary: Get leave quota
+      operationId: getLeaveQuota
+      parameters:
+        - in: path
+          name: emp_no
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: year
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: leave_type_id
+          required: true
+          schema:
+            type: integer
+            enum: [2]
+      responses:
+        '200':
+          description: Leave quota
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveQuota'
+        '404':
+          description: Leave quota not found
+    put:
+      summary: Update leave quota
+      operationId: updateLeaveQuota
+      parameters:
+        - in: path
+          name: emp_no
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: year
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: leave_type_id
+          required: true
+          schema:
+            type: integer
+            enum: [2]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveQuotaUpdate'
+      responses:
+        '200':
+          description: Updated leave quota
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaveQuota'
+        '404':
+          description: Leave quota not found
+    delete:
+      summary: Delete leave quota
+      operationId: deleteLeaveQuota
+      parameters:
+        - in: path
+          name: emp_no
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: year
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: leave_type_id
+          required: true
+          schema:
+            type: integer
+            enum: [2]
+      responses:
+        '204':
+          description: Leave quota deleted
+        '404':
+          description: Leave quota not found
+
+components:
+  schemas:
+    Employee:
+      type: object
+      required: [emp_no, birth_date, first_name, last_name, gender, hire_date]
+      properties:
+        emp_no:
+          type: integer
+        birth_date:
+          type: string
+          format: date
+        first_name:
+          type: string
+          maxLength: 14
+        last_name:
+          type: string
+          maxLength: 16
+        gender:
+          type: string
+          enum: [M, F]
+        hire_date:
+          type: string
+          format: date
+
+    EmployeeCreate:
+      type: object
+      required: [birth_date, first_name, last_name, gender, hire_date]
+      properties:
+        birth_date:
+          type: string
+          format: date
+        first_name:
+          type: string
+        last_name:
+          type: string
+        gender:
+          type: string
+          enum: [M, F]
+        hire_date:
+          type: string
+          format: date
+
+    EmployeeUpdate:
+      type: object
+      properties:
+        birth_date:
+          type: string
+          format: date
+        first_name:
+          type: string
+        last_name:
+          type: string
+        gender:
+          type: string
+          enum: [M, F]
+        hire_date:
+          type: string
+          format: date
+
+    Department:
+      type: object
+      required: [dept_no, dept_name]
+      properties:
+        dept_no:
+          type: string
+          maxLength: 4
+        dept_name:
+          type: string
+          maxLength: 40
+
+    DepartmentCreate:
+      type: object
+      required: [dept_no, dept_name]
+      properties:
+        dept_no:
+          type: string
+        dept_name:
+          type: string
+
+    DepartmentUpdate:
+      type: object
+      properties:
+        dept_name:
+          type: string
+
+    LeaveRequest:
+      type: object
+      required:
+        - leave_id
+        - emp_no
+        - leave_type_id
+        - start_date
+        - end_date
+        - days_requested
+        - status
+        - requested_at
+      properties:
+        leave_id:
+          type: integer
+        emp_no:
+          type: integer
+        leave_type_id:
+          type: integer
+          enum: [0, 1, 2, 3]
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        days_requested:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, CANCELLED]
+        requested_at:
+          type: string
+          format: date-time
+        decided_at:
+          type: string
+          format: date-time
+          nullable: true
+        manager_emp_no:
+          type: integer
+          nullable: true
+        employee_comment:
+          type: string
+          nullable: true
+        manager_comment:
+          type: string
+          nullable: true
+
+    LeaveRequestCreate:
+      type: object
+      required:
+        - emp_no
+        - leave_type_id
+        - start_date
+        - end_date
+      properties:
+        emp_no:
+          type: integer
+        leave_type_id:
+          type: integer
+          enum: [0, 1, 2, 3]
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        employee_comment:
+          type: string
+          nullable: true
+
+    LeaveRequestUpdate:
+      type: object
+      properties:
+        leave_type_id:
+          type: integer
+          enum: [0, 1, 2, 3]
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, CANCELLED]
+        manager_emp_no:
+          type: integer
+        employee_comment:
+          type: string
+          nullable: true
+        manager_comment:
+          type: string
+          nullable: true
+
+    LeaveQuota:
+      type: object
+      required:
+        - emp_no
+        - year
+        - leave_type_id
+        - annual_quota_days
+      properties:
+        emp_no:
+          type: integer
+        year:
+          type: integer
+        leave_type_id:
+          type: integer
+          enum: [2]
+        annual_quota_days:
+          type: integer
+          minimum: 0
+
+    LeaveQuotaCreate:
+      type: object
+      required:
+        - emp_no
+        - year
+        - leave_type_id
+        - annual_quota_days
+      properties:
+        emp_no:
+          type: integer
+        year:
+          type: integer
+        leave_type_id:
+          type: integer
+          enum: [2]
+        annual_quota_days:
+          type: integer
+          minimum: 0
+
+    LeaveQuotaUpdate:
+      type: object
+      properties:
+        annual_quota_days:
+          type: integer
+          minimum: 0
