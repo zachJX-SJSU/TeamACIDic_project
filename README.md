@@ -13,9 +13,9 @@ Employees_dev.sql is the samller database for dev, load them into mysql with:
 
 
 For testing, run the following:
-
+First make sure to activate virtual env:
 `source .venv/bin/activate`
-
+,then run:
 `pytest`
-# or with coverage:
+or with coverage:
 `pytest --cov=app`
