@@ -22,16 +22,18 @@ Employees_dev.sql is the samller cutoff database for developement, load them int
      then update the changes: `FLUSH PRIVILEGES;` Then exit mysql. You can later verify the changes with `mysql -u hr_user -p`
    
    - Go to `/app/db.py` and update the URL with your username and password:
-     `DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "mysql+pymysql://hr_user:your_password@localhost:3306/employees",)`
+     ```
+     DATABASE_URL = os.getenv("DATABASE_URL","mysql+pymysql://hr_user:your_password@localhost:3306/employees",)
+     ```
 
 4. Go back to the project directory, then run the script to populate the initial auth_user db with default username([initial]_[emp_no]) and password("abc123"):
-`cd /path/to/projectsource  
+```
+cd /path/to/projectsource  
 .venv/bin/activate  
-python -m scripts.backfill_auth_users`
+python -m scripts.backfill_auth_users
+```
 
-5. At this point, all setup is complete, you should be able to start the FastAPI app with: `uvicorn app.main:app --reload` with no error.  
+6. At this point, all setup is complete, you should be able to start the FastAPI app with: `uvicorn app.main:app --reload` with no error.  
 
 For testing, do the following:  
 First make sure to activate virtual env:  
