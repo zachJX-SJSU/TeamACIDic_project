@@ -18,7 +18,7 @@ Employees_dev.sql is the samller cutoff database for developement, load them int
 3. Create a dedicated MySQL user for the database, and then set the username and password in db.py:
    - Run `sudo mysql -u root` to log into mysql
    - Create a user "hr_user" with a password: `CREATE USER 'hr_user'@'localhost' IDENTIFIED BY 'your_password';`
-   - Then grant permission of the "employees" database to this user: `GRANT ALL PRIVILEGES ON database_name.* TO 'new_user'@'localhost';`
+   - Then grant permission of the "employees" database to this user: `GRANT ALL PRIVILEGES ON employees.* TO 'new_user'@'localhost';`
      then update the changes: `FLUSH PRIVILEGES;` Then exit mysql. You can later verify the changes with `mysql -u hr_user -p`
    
    - Go to `/app/db.py` and update the URL with your username and password:
