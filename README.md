@@ -24,7 +24,7 @@ Employees_dev.sql is the samller cutoff database for developement, load them int
    - Go to `/app/db.py` and update the URL with your username and password:
      `DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "mysql+pymysql://hr_user:abc123@localhost:3306/employees",)`
+    "mysql+pymysql://hr_user:your_password@localhost:3306/employees",)`
 
 4. Go back to the project directory, then run the script to populate the initial auth_user db with default username([initial]_[emp_no]) and password("abc123"):
 `cd /path/to/projectsource  
