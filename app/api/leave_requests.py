@@ -28,7 +28,11 @@ def create_leave_request(
     leave_in: schemas.LeaveRequestCreate,
     db: Session = Depends(get_db),
 ):
-    # Business rules like quota checks can be added here before persisting.
+    """
+    Create a leave request.
+    Validates quota availability before creating the request.
+    Returns error with "Insufficient quota" if quota is not sufficient.
+    """
     return crud_leave_requests.create_leave_request(db, leave_in)
 
 
@@ -59,3 +63,20 @@ def delete_leave_request(leave_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Leave request not found")
     crud_leave_requests.delete_leave_request(db, db_leave)
     return None
+
+
+@router.patch("/{leave_id}/review", response_model=schemas.LeaveRequest)
+def review_leave_request(
+    leave_id: int,
+    review_in: schemas.LeaveRequestReview,
+    manager_emp_no: int = Query(..., description="Employee number of the reviewing manager"),
+    db: Session = Depends(get_db),
+):
+    """
+    Manager reviews (approves or rejects) a leave request.
+    If approved, the quota is automatically deducted from employee's quota.
+    Only pending requests can be reviewed.
+    """
+    return crud_leave_requests.review_leave_request(
+        db, leave_id, review_in, manager_emp_no
+    )
