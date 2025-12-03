@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://localhost:8000", // adjust if needed
+  baseURL: "http://54.219.163.78/:8000",
 });
 
 // Attach Authorization: Bearer <token> on every request if present
