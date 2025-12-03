@@ -54,6 +54,14 @@ class Department(Base):
     dept_no = Column(String(4), primary_key=True, index=True)
     dept_name = Column(String(40), nullable=False, unique=True)
 
+class DeptManager(Base):
+    __tablename__ = "dept_manager"
+
+    emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), primary_key=True)
+    dept_no = Column(String(4), ForeignKey("departments.dept_no", ondelete="CASCADE"), primary_key=True)
+    from_date = Column(Date, nullable=False)
+    to_date = Column(Date, nullable=False)
+
 
 class DeptEmp(Base):
     __tablename__ = "dept_emp"

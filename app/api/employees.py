@@ -12,6 +12,8 @@ from app.crud import employees as crud_employees
 from app.models import Employee
 from app.schemas import EmployeeSearchResult
 
+from app.dependencies.auth import get_current_user
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/employees", tags=["employees"])
