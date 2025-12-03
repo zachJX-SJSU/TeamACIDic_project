@@ -289,7 +289,7 @@ const EmployeeProfilePage: React.FC<EmployeeProfilePageProps> = ({
             </thead>
             <tbody>
               {salaries.map((s) => (
-                <tr key={`${s.start_date}-${s.end_date}-${s.salary}`}>
+                <tr key={`${s.emp_no}-${s.start_date}`}>
                   <td>{s.start_date}</td>
                   <td>{s.end_date}</td>
                   <td style={{ textAlign: "right" }}>
