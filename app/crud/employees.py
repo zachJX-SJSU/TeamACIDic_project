@@ -88,7 +88,7 @@ def create_employee(db: Session, employee_in: schemas.EmployeeCreate) -> models.
             emp_no=employee.emp_no,
             year=hire_year,
             leave_type_id=2,  # sick_leave
-            quota_days=DEFAULT_SICK_LEAVE_QUOTA,
+            annual_quota_days=DEFAULT_SICK_LEAVE_QUOTA,
             used_days=0,
         )
     )
@@ -97,7 +97,7 @@ def create_employee(db: Session, employee_in: schemas.EmployeeCreate) -> models.
             emp_no=employee.emp_no,
             year=hire_year,
             leave_type_id=0,  # paid_leave
-            quota_days=DEFAULT_PAID_LEAVE_QUOTA,
+            annual_quota_days=DEFAULT_PAID_LEAVE_QUOTA,
             used_days=0,
         )
     )
