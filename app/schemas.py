@@ -13,8 +13,17 @@ class EmployeeBase(BaseModel):
     hire_date: date
 
 
-class EmployeeCreate(EmployeeBase):
-    pass
+class EmployeeCreate(BaseModel):
+    birth_date: date
+    first_name: str
+    last_name: str
+    gender: Literal["M", "F"]
+    hire_date: date
+
+    # NEW: required HR fields at creation
+    dept_no: str           # e.g. "d005"
+    title: str             # e.g. "Engineer"
+    starting_salary: int   # e.g. 60000
 
 
 class EmployeeUpdate(BaseModel):

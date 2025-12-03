@@ -50,6 +50,30 @@ class Department(Base):
     dept_name = Column(String(40), nullable=False, unique=True)
 
 
+class DeptEmp(Base):
+    __tablename__ = "dept_emp"
+
+    emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), nullable=False)
+    dept_no = Column(String(4), ForeignKey("departments.dept_no", ondelete="CASCADE"), nullable=False)
+    from_date = Column(Date, nullable=False)
+    to_date = Column(Date, nullable=False)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("emp_no", "dept_no", "from_date", name="pk_dept_emp"),
+    )
+
+class Title(Base):
+    __tablename__ = "titles"
+
+    emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), nullable=False)
+    title = Column(String(50), nullable=False)
+    from_date = Column(Date, nullable=False)
+    to_date = Column(Date, nullable=False)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("emp_no", "title", "from_date", name="pk_titles"),
+    )
+
 class EmployeeLeaveRequest(Base):
     __tablename__ = "employee_leave_requests"
 

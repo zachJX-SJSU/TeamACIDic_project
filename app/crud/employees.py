@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app import models, schemas
 from app.security import hash_password
-
+from datetime import date
 
 def get_employee(db: Session, emp_no: int) -> Optional[models.Employee]:
     return db.query(models.Employee).filter(models.Employee.emp_no == emp_no).first()
@@ -36,7 +36,46 @@ def create_employee(db: Session, employee_in: schemas.EmployeeCreate) -> models.
     )
     db.add(auth_user)
 
-    # 3. Commit both in a single transaction
+    # Common dates
+    start_date = employee.hire_date
+    far_future = date(9999, 1, 1)
+
+    # 3. Dept assignment (dept_emp)
+    db.add(
+        models.DeptEmp(
+            emp_no=employee.emp_no,
+            dept_no=employee_in.dept_no,
+            from_date=start_date,
+            to_date=far_future,
+        )
+    )
+
+    # 4. Starting salary (salaries)
+    # TODO 
+
+    # 5. Starting title (titles)
+    db.add(
+        models.Title(
+            emp_no=employee.emp_no,
+            title=employee_in.title,
+            from_date=start_date,
+            to_date=far_future,
+        )
+    )
+
+    # 6. Initial leave quota (sick leave, current year)
+    hire_year = start_date.year
+    db.add(
+        models.EmployeeLeaveQuota(
+            emp_no=employee.emp_no,
+            year=hire_year,
+            leave_type_id=2,  # sick_leave
+            quota_days=DEFAULT_SICK_LEAVE_DAYS,
+            used_days=0,
+        )
+    )
+
+    # Commit both in a single transaction
     db.commit()
     db.refresh(employee)
     return employee
