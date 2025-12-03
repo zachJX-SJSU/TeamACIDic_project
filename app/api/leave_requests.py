@@ -21,7 +21,7 @@ def list_leave_requests(
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
-    logger.info("GET /leave-requests called", extra={"emp_no": emp_no,"status": status, "limit": limit, "offset": offset})
+    logger.info(f"GET /leave-requests called, emp_no:{emp_no}, status:{status}")
     try:
         leave_requests = crud_leave_requests.get_leave_requests(
             db, emp_no=emp_no, status=status, skip=offset, limit=limit
@@ -44,7 +44,7 @@ def create_leave_request(
     Validates quota availability before creating the request.
     Returns error with "Insufficient quota" if quota is not sufficient.
     """
-    logger.info("POST /leave-requests called", extra={"leave_req":leave_in})
+    logger.info(f"POST /leave-requests called, leave_req={leave_in}")
     try:
         leave_request = crud_leave_requests.create_leave_request(db, leave_in)
         return leave_request
@@ -58,7 +58,7 @@ def create_leave_request(
 
 @router.get("/{leave_id}", response_model=schemas.LeaveRequest)
 def get_leave_request(leave_id: int, db: Session = Depends(get_db)):
-    logger.info("GET leaveReq by id...", extra={"leave_id":leave_id})
+    logger.info(f"GET leaveReq by id, leave_id={leave_id}")
     db_leave = crud_leave_requests.get_leave_request(db, leave_id)
     if not db_leave:
         raise HTTPException(status_code=404, detail="Leave request not found")
