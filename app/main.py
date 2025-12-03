@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import Base, engine
-from app.api import employees, departments, leave_requests, leave_quotas, auth
+from app.api import employees, departments, leave_requests, leave_quotas, auth,salary_routes
 
 # Create DB tables if they do not exist yet.
 # In a real project you'd usually manage this via Alembic migrations instead.
@@ -28,6 +28,7 @@ app.include_router(departments.router)
 app.include_router(leave_requests.router)
 app.include_router(leave_quotas.router)
 app.include_router(auth.router)
+app.include_router(salary_routes.router)
 
 
 @app.get("/")
