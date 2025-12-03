@@ -8,6 +8,7 @@ from app.db import get_db
 from app.crud.salaries import get_salaries_for_period
 from app.schemas import SalaryPeriod
 
+from app.dependencies.auth import get_current_user
 
 router = APIRouter(
     prefix="/employees",
@@ -21,7 +22,10 @@ def get_employee_salaries(
     start_date: date = Query(..., description="Start of period (YYYY-MM-DD)"),
     end_date: date = Query(..., description="End of period (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
+    user = Depends(get_current_user)
 ):
+    if user.emp_no != emp_no:
+        raise HTTPException(403, "Not allowed to view another employee’s salary")
     # Basic validation
     if start_date > end_date:
         raise HTTPException(status_code=400, detail="start_date cannot be after end_date")
