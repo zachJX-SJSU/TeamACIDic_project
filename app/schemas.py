@@ -149,4 +149,4 @@ class SalaryPeriod(BaseModel):
     end_date: date
 
     class Config:
-        orm_mode = True
+        from_attributes = True
