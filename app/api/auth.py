@@ -21,7 +21,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     # determine roles
     is_manager = db.query(models.DeptManager).filter(
         models.DeptManager.emp_no == user.emp_no,
-        models.DeptManager.to_date >= datetime.date.today()
+        models.DeptManager.to_date >= date.today()
     ).first() is not None
 
     is_hr = bool(getattr(user, "is_hr_admin", False))
