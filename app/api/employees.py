@@ -2,10 +2,13 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func    
 
 from app.db import get_db
 from app import schemas
 from app.crud import employees as crud_employees
+from app.models import Employee
+from app.schemas import EmployeeSearchResult
 
 router = APIRouter(prefix="/employees", tags=["employees"])
 
@@ -18,6 +21,41 @@ def list_employees(
 ):
     return crud_employees.get_employees(db, skip=offset, limit=limit)
 
+@router.get("/search-by-name", response_model=List[EmployeeSearchResult])
+def search_employees(
+    first_name: str = Query("", description="Prefix of first name"),
+    last_name: str = Query("", description="Prefix of last name"),
+    page: int = Query(1, ge=1, description="Page number"),
+    db: Session = Depends(get_db),
+):
+    """
+    Search employees by first/last name prefix.
+    Direct SQLAlchemy query, no CRUD helper.
+    """
+    PAGE_SIZE = 10
+    offset = (page - 1) * PAGE_SIZE
+
+    query = db.query(Employee)
+
+    if first_name:
+        query = query.filter(
+            func.lower(Employee.first_name).like(func.lower(first_name) + "%")
+        )
+
+    if last_name:
+        query = query.filter(
+            func.lower(Employee.last_name).like(func.lower(last_name) + "%")
+        )
+
+    employees = (
+        query
+        .order_by(Employee.first_name, Employee.last_name, Employee.emp_no)
+        .limit(PAGE_SIZE)
+        .offset(offset)
+        .all()
+    )
+
+    return employees
 
 @router.post("", response_model=schemas.Employee, status_code=201)
 def create_employee(
