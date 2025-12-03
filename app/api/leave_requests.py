@@ -17,14 +17,17 @@ router = APIRouter(prefix="/leave-requests", tags=["leave-requests"])
 def list_leave_requests(
     emp_no: Optional[int] = Query(default=None),
     status: Optional[str] = Query(default=None),
+    manager_emp_no: Optional[int] = Query(default=None, description="Filter by manager employee number"),
     limit: int = Query(50, ge=1),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
-    logger.info(f"GET /leave-requests called, emp_no:{emp_no}, status:{status}")
+    logger.info(
+        f"GET /leave-requests called, emp_no:{emp_no}, status:{status}, manager_emp_no:{manager_emp_no}"
+    )
     try:
         leave_requests = crud_leave_requests.get_leave_requests(
-            db, emp_no=emp_no, status=status, skip=offset, limit=limit
+            db, emp_no=emp_no, status=status, manager_emp_no=manager_emp_no, skip=offset, limit=limit
         )
         return leave_requests
     except Exception as e:
