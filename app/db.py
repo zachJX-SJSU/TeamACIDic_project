@@ -4,9 +4,10 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 # DATABASE_URL should be something like:
 # mysql+pymysql://user:password@host:3306/employees
+# IMPORTANT: Team standard credentials - hr_user / abc123
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "mysql+pymysql://hr_user:Abc123456@localhost:3306/employees",
+    "mysql+pymysql://hr_user:abc123@localhost:3306/employees",
 )
 
 engine = create_engine(

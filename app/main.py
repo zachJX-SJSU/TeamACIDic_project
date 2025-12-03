@@ -1,18 +1,11 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import Base, engine
 from app.api import employees, departments, leave_requests, leave_quotas, auth
 
-# ----- Logging config -----
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
-)
-logger = logging.getLogger("hr_portal")
-# ---------------------------
+
+
 
 # Create DB tables if they do not exist yet.
 # In a real project you'd usually manage this via Alembic migrations instead.
@@ -38,6 +31,9 @@ app.include_router(departments.router)
 app.include_router(leave_requests.router)
 app.include_router(leave_quotas.router)
 app.include_router(auth.router)
+
+
+
 
 
 @app.get("/")
