@@ -6,7 +6,9 @@ import os
 
 # SECRET_KEY should be in an .env file for production (AWS EC2)
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key")
+
 ALGORITHM = "HS256"
+
 ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
