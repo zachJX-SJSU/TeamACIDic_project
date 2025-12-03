@@ -21,7 +21,7 @@ far_future = date(9999, 1, 1)
 def get_employee_salaries(
     emp_no: int,
     start_date: date = Query(..., description="Start of period (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(..., default=far_future, description="End of period (YYYY-MM-DD)"),
+    end_date: Optional[date] = Query(far_future, description="End of period (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
     user = Depends(get_current_user)
 ):
