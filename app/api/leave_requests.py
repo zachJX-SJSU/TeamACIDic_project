@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -6,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app import schemas
 from app.crud import leave_requests as crud_leave_requests
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/leave-requests", tags=["leave-requests"])
 
@@ -18,9 +21,17 @@ def list_leave_requests(
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
-    return crud_leave_requests.get_leave_requests(
-        db, emp_no=emp_no, status=status, skip=offset, limit=limit
-    )
+    logger.info("GET /leave-requests called", extra={"emp_no": emp_no,"status": status, "limit": limit, "offset": offset})
+    try:
+        leave_requests = crud_leave_requests.get_leave_requests(
+            db, emp_no=emp_no, status=status, skip=offset, limit=limit
+        )
+        return leave_requests
+    except Exception as e:
+        # Log the exception with stack trace
+        logger.exception("Error in GET /leave-requests")
+        # Let FastAPI/Uvicorn handle the actual response (500)
+        raise
 
 
 @router.post("", response_model=schemas.LeaveRequest, status_code=201)
@@ -33,11 +44,21 @@ def create_leave_request(
     Validates quota availability before creating the request.
     Returns error with "Insufficient quota" if quota is not sufficient.
     """
-    return crud_leave_requests.create_leave_request(db, leave_in)
+    logger.info("POST /leave-requests called", extra={"leave_req":leave_in})
+    try:
+        leave_request = crud_leave_requests.create_leave_request(db, leave_in)
+        return leave_request
+    except Exception as e:
+        # Log the exception with stack trace
+        logger.exception("Error in POST /leave-requests")
+        # Let FastAPI/Uvicorn handle the actual response (500)
+        raise
+    
 
 
 @router.get("/{leave_id}", response_model=schemas.LeaveRequest)
 def get_leave_request(leave_id: int, db: Session = Depends(get_db)):
+    logger.info("GET leaveReq by id...", extra={"leave_id":leave_id})
     db_leave = crud_leave_requests.get_leave_request(db, leave_id)
     if not db_leave:
         raise HTTPException(status_code=404, detail="Leave request not found")
@@ -50,6 +71,7 @@ def update_leave_request(
     leave_in: schemas.LeaveRequestUpdate,
     db: Session = Depends(get_db),
 ):
+    logger.info("UPDATE leaveReq by id...", extra={"leave_id":leave_id, "leave_in": leave_in})
     db_leave = crud_leave_requests.get_leave_request(db, leave_id)
     if not db_leave:
         raise HTTPException(status_code=404, detail="Leave request not found")
