@@ -10,12 +10,17 @@ from app.security import ACCESS_TOKEN_EXPIRE_MINUTES
 from app.security import verify_password, create_access_token
 from app import models, schemas
 
+import logging
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/login", response_model=schemas.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    logger.info(f"/login called, username: {form_data.username}")
     user = db.query(models.AuthUser).filter(models.AuthUser.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.password_hash):
+        logger.info(f"/login failed, Invalid credentials, username: {form_data.username}")
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # determine roles
@@ -25,6 +30,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     ).first() is not None
 
     is_hr = bool(getattr(user, "is_hr_admin", False))
+
+    logger.info(f"/login success, is_manager: {is_manager}, is_hr: {is_hr}")
 
     token = create_access_token(
         {
