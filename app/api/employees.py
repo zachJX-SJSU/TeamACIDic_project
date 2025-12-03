@@ -1,3 +1,5 @@
+import logging
+
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -7,8 +9,9 @@ from app.db import get_db
 from app import schemas
 from app.crud import employees as crud_employees
 
-router = APIRouter(prefix="/employees", tags=["employees"])
+logger = logging.getLogger(__name__)
 
+router = APIRouter(prefix="/employees", tags=["employees"])
 
 @router.get("", response_model=List[schemas.Employee])
 def list_employees(
@@ -16,7 +19,19 @@ def list_employees(
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
-    return crud_employees.get_employees(db, skip=offset, limit=limit)
+    logger.info("GET /employees called", extra={"limit": limit, "offset": offset})
+    try:
+        employees = crud_employees.get_employees(db, skip=offset, limit=limit)
+        logger.info(
+            "GET /employees succeeded",
+            extra={"limit": limit, "offset": offset, "returned": len(employees)},
+        )
+        return employees
+    except Exception as e:
+        # Log the exception with stack trace
+        logger.exception("Error in GET /employees")
+        # Let FastAPI/Uvicorn handle the actual response (500)
+        raise
 
 
 @router.post("", response_model=schemas.Employee, status_code=201)
