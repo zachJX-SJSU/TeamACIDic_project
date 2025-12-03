@@ -72,8 +72,8 @@ class EmployeeLeaveRequest(Base):
     employee_comment = Column(String(255), nullable=True)
     manager_comment = Column(String(255), nullable=True)
 
-    # employee = relationship("Employee", back_populates="leave_requests", foreign_keys=[emp_no])
-    # manager = relationship("Employee", back_populates="managed_leave_requests", foreign_keys=[manager_emp_no])
+    employee = relationship("Employee", back_populates="leave_requests", foreign_keys=[emp_no])
+    manager = relationship("Employee", back_populates="managed_leave_requests", foreign_keys=[manager_emp_no])
 
 
 class EmployeeLeaveQuota(Base):
