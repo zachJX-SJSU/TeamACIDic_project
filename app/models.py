@@ -10,14 +10,14 @@ from sqlalchemy import (
     SmallInteger,
 )
 from sqlalchemy.orm import relationship
-
+from sqlalchemy import PrimaryKeyConstraint
 from .db import Base
 
 
 class Employee(Base):
     __tablename__ = "employees"
 
-    emp_no = Column(Integer, primary_key=True, index=True)
+    emp_no = Column(Integer, primary_key=True, index=True, autoincrement=True)
     birth_date = Column(Date, nullable=False)
     first_name = Column(String(14), nullable=False)
     last_name = Column(String(16), nullable=False)
@@ -54,6 +54,30 @@ class Department(Base):
     dept_no = Column(String(4), primary_key=True, index=True)
     dept_name = Column(String(40), nullable=False, unique=True)
 
+
+class DeptEmp(Base):
+    __tablename__ = "dept_emp"
+
+    emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), nullable=False)
+    dept_no = Column(String(4), ForeignKey("departments.dept_no", ondelete="CASCADE"), nullable=False)
+    from_date = Column(Date, nullable=False)
+    to_date = Column(Date, nullable=False)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("emp_no", "dept_no", "from_date", name="pk_dept_emp"),
+    )
+
+class Title(Base):
+    __tablename__ = "titles"
+
+    emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), nullable=False)
+    title = Column(String(50), nullable=False)
+    from_date = Column(Date, nullable=False)
+    to_date = Column(Date, nullable=False)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("emp_no", "title", "from_date", name="pk_titles"),
+    )
 
 class EmployeeLeaveRequest(Base):
     __tablename__ = "employee_leave_requests"

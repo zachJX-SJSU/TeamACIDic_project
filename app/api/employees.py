@@ -22,7 +22,7 @@ def list_employees(
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
-    logger.info("GET /employees called", extra={"limit": limit, "offset": offset})
+    logger.info(f"GET /employees called, limit: {limit}, offset: {offset}")
     try:
         employees = crud_employees.get_employees(db, skip=offset, limit=limit)
         logger.info(
@@ -76,7 +76,16 @@ def create_employee(
     employee_in: schemas.EmployeeCreate,
     db: Session = Depends(get_db),
 ):
-    return crud_employees.create_employee(db, employee_in)
+    logger.info(f"POST /employees called, employee_in: {employee_in}")
+    try:
+        employees = crud_employees.create_employee(db, employee_in)
+        logger.info("POST /employees succeeded")
+        return employees
+    except Exception as e:
+        # Log the exception with stack trace
+        logger.exception("Error in POST /employees")
+        # Let FastAPI/Uvicorn handle the actual response (500)
+        raise
 
 
 @router.get("/{emp_no}", response_model=schemas.Employee)
