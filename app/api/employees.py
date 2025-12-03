@@ -36,6 +36,7 @@ def list_employees(
         # Let FastAPI/Uvicorn handle the actual response (500)
         raise
 
+
 @router.get("/search-by-name", response_model=List[EmployeeSearchResult])
 def search_employees(
     first_name: str = Query("", description="Prefix of first name"),
@@ -69,7 +70,6 @@ def search_employees(
         .offset(offset)
         .all()
     )
-
     return employees
 
 @router.post("", response_model=schemas.Employee, status_code=201)
