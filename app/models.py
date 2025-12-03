@@ -78,7 +78,7 @@ class EmployeeLeaveRequest(Base):
 
 class EmployeeLeaveQuota(Base):
     __tablename__ = "employee_leave_quota"
-
+    
     emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), primary_key=True)
     year = Column(Integer, primary_key=True)
     leave_type_id = Column(SmallInteger, primary_key=True)  # 0=paid, 2=sick

@@ -31,6 +31,15 @@ class Employee(EmployeeBase):
     class Config:
         from_attributes = True
 
+# ---- Employee search  ----
+class EmployeeSearchResult(BaseModel):
+    emp_no: int
+    first_name: str
+    last_name: str
+    gender: str
+
+    class Config:
+        from_attributes = True
 
 # ---- Department ----
 
