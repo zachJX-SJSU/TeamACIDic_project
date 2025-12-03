@@ -21,7 +21,8 @@ export async function fetchSalaries(
   if (fromDate) params.from_date = fromDate;
   if (toDate) params.to_date = toDate;
 
-  const res = await api.get<Salary[]>("/salaries", { params });
+  // const res = await api.get<Salary[]>("/salaries", { params });
+  const res = await api.get<Salary[]>(`/salaries/${empNo}`, { params });
   return res.data;
 }
 

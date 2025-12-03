@@ -11,13 +11,13 @@ from app.schemas import SalaryPeriod
 from app.dependencies.auth import get_current_user
 
 router = APIRouter(
-    prefix="/employees",
-    tags=["salary"]
+    prefix="/salaries",
+    tags=["salaries"],
 )
 
 far_future = date(9999, 1, 1)
 
-@router.get("/{emp_no}/salaries", response_model=List[SalaryPeriod], dependencies=[Depends(get_current_user)])
+@router.get("/{emp_no}",response_model=List[SalaryPeriod])
 def get_employee_salaries(
     emp_no: int,
     start_date: date = Query(..., description="Start of period (YYYY-MM-DD)"),
