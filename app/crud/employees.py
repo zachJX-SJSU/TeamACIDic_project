@@ -51,7 +51,14 @@ def create_employee(db: Session, employee_in: schemas.EmployeeCreate) -> models.
     )
 
     # 4. Starting salary (salaries)
-    # TODO 
+    db.add(
+        models.Salary(
+            emp_no=employee.emp_no,
+            salary=employee_in.starting_salary,
+            from_date=start_date,
+            to_date=far_future,
+        )
+    )
 
     # 5. Starting title (titles)
     db.add(
