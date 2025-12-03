@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -6,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app import schemas
 from app.crud import leave_quotas as crud_leave_quotas
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/leave-quotas", tags=["leave-quotas"])
 
