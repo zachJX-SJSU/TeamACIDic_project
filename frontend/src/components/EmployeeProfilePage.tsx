@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Employee,
   Salary,
+  SalaryPeriod,
   LeaveRequest,
   CreateLeaveRequestPayload,
   LeaveStatus
@@ -14,6 +15,9 @@ import {
   fetchManagerPendingLeaveRequests,
   updateLeaveRequest
 } from "../api/hrApi";
+
+
+const [salaries, setSalaries] = useState<SalaryPeriod[]>([]);
 
 interface EmployeeProfilePageProps {
   empNo: number;      // logged-in employee's emp_no
@@ -285,9 +289,9 @@ const EmployeeProfilePage: React.FC<EmployeeProfilePageProps> = ({
             </thead>
             <tbody>
               {salaries.map((s) => (
-                <tr key={`${s.emp_no}-${s.from_date}`}>
-                  <td>{s.from_date}</td>
-                  <td>{s.to_date}</td>
+                <tr key={`${s.start_date}-${s.end_date}-${s.salary}`}>
+                  <td>{s.start_date}</td>
+                  <td>{s.end_date}</td>
                   <td style={{ textAlign: "right" }}>
                     ${s.salary.toLocaleString()}
                   </td>
