@@ -6,6 +6,8 @@ from app.security import hash_password
 from datetime import date
 from app.models import Employee
 
+DEFAULT_SICK_LEAVE_QUOTA = 5
+DEFAULT_PAID_LEAVE_QUOTA = 10
 
 def get_employee(db: Session, emp_no: int) -> Optional[models.Employee]:
     return db.query(models.Employee).filter(models.Employee.emp_no == emp_no).first()
@@ -20,14 +22,21 @@ def get_employees(db: Session, skip: int = 0, limit: int = 50) -> List[models.Em
         .all()
     )
 
-
 def create_employee(db: Session, employee_in: schemas.EmployeeCreate) -> models.Employee:
-    # 1. Create the Employee row
-    employee = models.Employee(**employee_in.model_dump())
-    db.add(employee)
-    db.flush()  # get employee.emp_no without committing yet
+    # Break the input into "belongs on Employee" vs "belongs on other tables"
+    data = employee_in.model_dump()
 
-    # 2. Create matching AuthUser row with initials_empNo and default password "abc123"
+    dept_no = data.pop("dept_no")
+    title = data.pop("title")
+    starting_salary = data.pop("starting_salary")
+
+    # data now only has fields that actually exist on models.Employee:
+    # birth_date, first_name, last_name, gender, hire_date
+    employee = models.Employee(**data)
+    db.add(employee)
+    db.flush()  # get auto-generated emp_no
+
+    # ---- Auth user for this employee ----
     initials = (employee.first_name[0] + employee.last_name[0]).lower()
     username = f"{initials}_{employee.emp_no}"
 
@@ -39,53 +48,60 @@ def create_employee(db: Session, employee_in: schemas.EmployeeCreate) -> models.
     )
     db.add(auth_user)
 
-    # Common dates
     start_date = employee.hire_date
     far_future = date(9999, 1, 1)
 
-    # 3. Dept assignment (dept_emp)
+    # ---- Dept assignment (dept_emp) ----
     db.add(
         models.DeptEmp(
             emp_no=employee.emp_no,
-            dept_no=employee_in.dept_no,
+            dept_no=dept_no,
             from_date=start_date,
             to_date=far_future,
         )
     )
 
-    # 4. Starting salary (salaries)
+    # ---- Starting salary (salaries) ----
     db.add(
         models.Salary(
             emp_no=employee.emp_no,
-            salary=employee_in.starting_salary,
+            salary=starting_salary,
             from_date=start_date,
             to_date=far_future,
         )
     )
 
-    # 5. Starting title (titles)
+    # ---- Starting title (titles) ----
     db.add(
         models.Title(
             emp_no=employee.emp_no,
-            title=employee_in.title,
+            title=title,
             from_date=start_date,
             to_date=far_future,
         )
     )
 
-    # 6. Initial leave quota (sick leave, current year)
+    # ---- Initial leave quota (example: sick leave for hire year) ----
     hire_year = start_date.year
     db.add(
         models.EmployeeLeaveQuota(
             emp_no=employee.emp_no,
             year=hire_year,
             leave_type_id=2,  # sick_leave
-            quota_days=DEFAULT_SICK_LEAVE_DAYS,
+            quota_days=DEFAULT_SICK_LEAVE_QUOTA,
+            used_days=0,
+        )
+    )
+    db.add(
+        models.EmployeeLeaveQuota(
+            emp_no=employee.emp_no,
+            year=hire_year,
+            leave_type_id=0,  # paid_leave
+            quota_days=DEFAULT_PAID_LEAVE_QUOTA,
             used_days=0,
         )
     )
 
-    # Commit both in a single transaction
     db.commit()
     db.refresh(employee)
     return employee
