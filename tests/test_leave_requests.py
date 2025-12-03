@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from app import models
 from tests.conftest import TestingSessionLocal
@@ -19,6 +20,60 @@ def create_test_employee(db: Session, emp_no: int, first_name: str = "Test", las
     db.commit()
     db.refresh(employee)
     return employee
+
+
+def setup_department_tables(db: Session):
+    """Helper to create dept_emp and dept_manager tables for testing"""
+    # Create dept_emp table if not exists (SQLite compatible)
+    db.execute(text("""
+        CREATE TABLE IF NOT EXISTS dept_emp (
+            emp_no INTEGER NOT NULL,
+            dept_no VARCHAR(4) NOT NULL,
+            from_date DATE NOT NULL,
+            to_date DATE NOT NULL,
+            PRIMARY KEY (emp_no, dept_no)
+        )
+    """))
+    
+    # Create dept_manager table if not exists (SQLite compatible)
+    db.execute(text("""
+        CREATE TABLE IF NOT EXISTS dept_manager (
+            emp_no INTEGER NOT NULL,
+            dept_no VARCHAR(4) NOT NULL,
+            from_date DATE NOT NULL,
+            to_date DATE NOT NULL,
+            PRIMARY KEY (emp_no, dept_no)
+        )
+    """))
+    db.commit()
+
+
+def create_department_assignment(db: Session, emp_no: int, dept_no: str, from_date: str = "2020-01-01", to_date: str = "9999-01-01"):
+    """Helper to create a department assignment"""
+    db.execute(text("""
+        INSERT OR REPLACE INTO dept_emp (emp_no, dept_no, from_date, to_date)
+        VALUES (:emp_no, :dept_no, :from_date, :to_date)
+    """), {
+        "emp_no": emp_no,
+        "dept_no": dept_no,
+        "from_date": from_date,
+        "to_date": to_date
+    })
+    db.commit()
+
+
+def create_department_manager(db: Session, manager_emp_no: int, dept_no: str, from_date: str = "2020-01-01", to_date: str = "9999-01-01"):
+    """Helper to create a department manager assignment"""
+    db.execute(text("""
+        INSERT OR REPLACE INTO dept_manager (emp_no, dept_no, from_date, to_date)
+        VALUES (:emp_no, :dept_no, :from_date, :to_date)
+    """), {
+        "emp_no": manager_emp_no,
+        "dept_no": dept_no,
+        "from_date": from_date,
+        "to_date": to_date
+    })
+    db.commit()
 
 
 # Test Case 1: Create paid leave request with sufficient quota
@@ -401,6 +456,312 @@ def test_list_leave_requests_by_employee(client):
         requests = response.json()
         assert len(requests) >= 1
         assert all(req["emp_no"] == 10010 for req in requests)
+    finally:
+        db.close()
+
+
+# Test Case 11: Manager auto-assigned when creating leave request
+def test_manager_auto_assigned_on_leave_request_creation(client):
+    """Test that manager_emp_no is automatically set when creating a leave request"""
+    db = TestingSessionLocal()
+    try:
+        # Create employee and manager with unique IDs
+        employee = create_test_employee(db, emp_no=50010, first_name="Jack", last_name="Black")
+        manager = create_test_employee(db, emp_no=60010, first_name="Manager", last_name="Boss")
+        
+        # Create department assignment (dept_emp) using raw SQL
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS dept_emp (
+                emp_no INTEGER NOT NULL,
+                dept_no VARCHAR(4) NOT NULL,
+                from_date DATE NOT NULL,
+                to_date DATE NOT NULL,
+                PRIMARY KEY (emp_no, dept_no)
+            )
+        """))
+        # Create department manager assignment (dept_manager) using raw SQL
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS dept_manager (
+                emp_no INTEGER NOT NULL,
+                dept_no VARCHAR(4) NOT NULL,
+                from_date DATE NOT NULL,
+                to_date DATE NOT NULL,
+                PRIMARY KEY (emp_no, dept_no)
+            )
+        """))
+        # Use a unique department (d010) to avoid conflicts with other tests
+        # Clean up any existing assignments for this test employee
+        db.execute(text("DELETE FROM dept_emp WHERE emp_no = :emp_no"), {"emp_no": 50010})
+        db.execute(text("""
+            INSERT INTO dept_emp (emp_no, dept_no, from_date, to_date)
+            VALUES (:emp_no, 'd010', '2020-01-01', '9999-01-01')
+        """), {"emp_no": 50010})
+        
+        # Clean up any existing managers for d010 and create our test manager
+        db.execute(text("DELETE FROM dept_manager WHERE dept_no = 'd010'"))
+        db.execute(text("""
+            INSERT INTO dept_manager (emp_no, dept_no, from_date, to_date)
+            VALUES (60010, 'd010', '2020-01-01', '9999-01-01')
+        """))
+        db.commit()
+        
+        # Create leave request
+        payload = {
+            "emp_no": 50010,
+            "leave_type_id": 0,
+            "start_date": str(date.today() + timedelta(days=7)),
+            "end_date": str(date.today() + timedelta(days=9)),
+            "employee_comment": "Vacation"
+        }
+        
+        response = client.post("/leave-requests", json=payload)
+        assert response.status_code == 201
+        
+        data = response.json()
+        assert data["manager_emp_no"] == 60010, f"Expected manager_emp_no=60010, got {data.get('manager_emp_no')}"
+        assert data["status"] == "PENDING"
+    finally:
+        db.close()
+
+
+# Test Case 12: Manager auto-assigned with multiple departments (uses latest)
+def test_manager_auto_assigned_latest_department(client):
+    """Test that manager from latest department is used when employee has multiple departments"""
+    db = TestingSessionLocal()
+    try:
+        # Create employee and two managers
+        employee = create_test_employee(db, emp_no=20011, first_name="Jill", last_name="White")
+        manager1 = create_test_employee(db, emp_no=30011, first_name="Manager", last_name="One")
+        manager2 = create_test_employee(db, emp_no=30012, first_name="Manager", last_name="Two")
+        
+        # Create department assignments - employee moved from d001 to d002
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS dept_emp (
+                emp_no INTEGER NOT NULL,
+                dept_no VARCHAR(4) NOT NULL,
+                from_date DATE NOT NULL,
+                to_date DATE NOT NULL,
+                PRIMARY KEY (emp_no, dept_no)
+            )
+        """))
+        # Old department (ended)
+        db.execute(text("""
+            INSERT OR REPLACE INTO dept_emp (emp_no, dept_no, from_date, to_date)
+            VALUES (:emp_no, 'd001', '2020-01-01', '2023-12-31')
+        """), {"emp_no": 20011})
+        # Current department (latest)
+        db.execute(text("""
+            INSERT OR REPLACE INTO dept_emp (emp_no, dept_no, from_date, to_date)
+            VALUES (:emp_no, 'd002', '2024-01-01', '9999-01-01')
+        """), {"emp_no": 20011})
+        
+        # Create department managers
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS dept_manager (
+                emp_no INTEGER NOT NULL,
+                dept_no VARCHAR(4) NOT NULL,
+                from_date DATE NOT NULL,
+                to_date DATE NOT NULL,
+                PRIMARY KEY (emp_no, dept_no)
+            )
+        """))
+        db.execute(text("""
+            INSERT OR REPLACE INTO dept_manager (emp_no, dept_no, from_date, to_date)
+            VALUES (30011, 'd001', '2020-01-01', '9999-01-01')
+        """))
+        db.execute(text("""
+            INSERT OR REPLACE INTO dept_manager (emp_no, dept_no, from_date, to_date)
+            VALUES (30012, 'd002', '2024-01-01', '9999-01-01')
+        """))
+        db.commit()
+        
+        # Create leave request - should use manager from d002 (latest department)
+        payload = {
+            "emp_no": 20011,
+            "leave_type_id": 0,
+            "start_date": str(date.today() + timedelta(days=7)),
+            "end_date": str(date.today() + timedelta(days=9)),
+        }
+        
+        response = client.post("/leave-requests", json=payload)
+        assert response.status_code == 201
+        
+        data = response.json()
+        assert data["manager_emp_no"] == 30012, f"Expected manager from latest dept (30012), got {data.get('manager_emp_no')}"
+    finally:
+        db.close()
+
+
+# Test Case 13: No manager assigned when employee has no department
+def test_no_manager_when_no_department(client):
+    """Test that manager_emp_no is None when employee has no current department"""
+    db = TestingSessionLocal()
+    try:
+        # Create employee without department assignment
+        employee = create_test_employee(db, emp_no=20012, first_name="John", last_name="Doe")
+        
+        # Create leave request
+        payload = {
+            "emp_no": 20012,
+            "leave_type_id": 0,
+            "start_date": str(date.today() + timedelta(days=7)),
+            "end_date": str(date.today() + timedelta(days=9)),
+        }
+        
+        response = client.post("/leave-requests", json=payload)
+        assert response.status_code == 201
+        
+        data = response.json()
+        # manager_emp_no should be None since employee has no department
+        assert data["manager_emp_no"] is None, f"Expected manager_emp_no=None, got {data.get('manager_emp_no')}"
+    finally:
+        db.close()
+
+
+# Test Case 14: No manager assigned when department has no manager
+def test_no_manager_when_department_has_no_manager(client):
+    """Test that manager_emp_no is None when department has no current manager"""
+    db = TestingSessionLocal()
+    try:
+        # Create employee
+        employee = create_test_employee(db, emp_no=20013, first_name="Jane", last_name="Smith")
+        
+        # Create department assignment but no manager
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS dept_emp (
+                emp_no INTEGER NOT NULL,
+                dept_no VARCHAR(4) NOT NULL,
+                from_date DATE NOT NULL,
+                to_date DATE NOT NULL,
+                PRIMARY KEY (emp_no, dept_no)
+            )
+        """))
+        db.execute(text("""
+            INSERT OR REPLACE INTO dept_emp (emp_no, dept_no, from_date, to_date)
+            VALUES (:emp_no, 'd003', '2020-01-01', '9999-01-01')
+        """), {"emp_no": 20013})
+        # Don't create any manager for d003
+        db.commit()
+        
+        # Create leave request
+        payload = {
+            "emp_no": 20013,
+            "leave_type_id": 0,
+            "start_date": str(date.today() + timedelta(days=7)),
+            "end_date": str(date.today() + timedelta(days=9)),
+        }
+        
+        response = client.post("/leave-requests", json=payload)
+        assert response.status_code == 201
+        
+        data = response.json()
+        # manager_emp_no should be None since department has no manager
+        assert data["manager_emp_no"] is None
+    finally:
+        db.close()
+
+
+# Test Case 15: Manager auto-assigned and then manager approves request
+def test_manager_auto_assigned_then_manager_approves(client):
+    """Test complete workflow: manager auto-assigned, then same manager approves"""
+    db = TestingSessionLocal()
+    try:
+        # Create employee and manager
+        employee = create_test_employee(db, emp_no=20014, first_name="Bob", last_name="Johnson")
+        manager = create_test_employee(db, emp_no=30014, first_name="Manager", last_name="Boss")
+        
+        # Set up department and manager
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS dept_emp (
+                emp_no INTEGER NOT NULL,
+                dept_no VARCHAR(4) NOT NULL,
+                from_date DATE NOT NULL,
+                to_date DATE NOT NULL,
+                PRIMARY KEY (emp_no, dept_no)
+            )
+        """))
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS dept_manager (
+                emp_no INTEGER NOT NULL,
+                dept_no VARCHAR(4) NOT NULL,
+                from_date DATE NOT NULL,
+                to_date DATE NOT NULL,
+                PRIMARY KEY (emp_no, dept_no)
+            )
+        """))
+        db.execute(text("""
+            INSERT OR REPLACE INTO dept_emp (emp_no, dept_no, from_date, to_date)
+            VALUES (:emp_no, 'd004', '2020-01-01', '9999-01-01')
+        """), {"emp_no": 20014})
+        db.execute(text("""
+            INSERT OR REPLACE INTO dept_manager (emp_no, dept_no, from_date, to_date)
+            VALUES (30014, 'd004', '2020-01-01', '9999-01-01')
+        """))
+        db.commit()
+        
+        # Create leave request - manager should be auto-assigned
+        payload = {
+            "emp_no": 20014,
+            "leave_type_id": 0,
+            "start_date": str(date.today() + timedelta(days=7)),
+            "end_date": str(date.today() + timedelta(days=9)),
+        }
+        leave_request = client.post("/leave-requests", json=payload).json()
+        leave_id = leave_request["leave_id"]
+        
+        # Verify manager was auto-assigned
+        assert leave_request["manager_emp_no"] == 30014
+        
+        # Manager approves the request
+        review_payload = {
+            "status": "APPROVED",
+            "manager_comment": "Approved by auto-assigned manager"
+        }
+        response = client.patch(
+            f"/leave-requests/{leave_id}/review?manager_emp_no=30014",
+            json=review_payload
+        )
+        assert response.status_code == 200
+        
+        data = response.json()
+        assert data["status"] == "APPROVED"
+        assert data["manager_emp_no"] == 30014
+    finally:
+        db.close()
+
+
+# Test Case 16: Invalid employee when creating leave request
+def test_invalid_employee_returns_404(client):
+    """Test that creating leave request for non-existent employee returns 404"""
+    payload = {
+        "emp_no": 99999,  # Non-existent employee
+        "leave_type_id": 0,
+        "start_date": str(date.today() + timedelta(days=7)),
+        "end_date": str(date.today() + timedelta(days=9)),
+    }
+    
+    response = client.post("/leave-requests", json=payload)
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"].lower()
+
+
+# Test Case 17: Invalid dates when creating leave request
+def test_invalid_dates_returns_400(client):
+    """Test that creating leave request with end_date < start_date returns 400"""
+    db = TestingSessionLocal()
+    try:
+        employee = create_test_employee(db, emp_no=20015, first_name="Alice", last_name="Brown")
+        
+        payload = {
+            "emp_no": 20015,
+            "leave_type_id": 0,
+            "start_date": str(date.today() + timedelta(days=10)),
+            "end_date": str(date.today() + timedelta(days=5)),  # End before start
+        }
+        
+        response = client.post("/leave-requests", json=payload)
+        assert response.status_code == 400
+        assert "end_date" in response.json()["detail"].lower() or "date" in response.json()["detail"].lower()
     finally:
         db.close()
 
