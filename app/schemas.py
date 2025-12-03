@@ -159,3 +159,13 @@ class SalaryPeriod(BaseModel):
 
     class Config:
         from_attributes = True
+
+# ---- JWT ----
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class TokenData(BaseModel):
+    emp_no: int
+    is_manager: bool
+    is_hr_admin: bool
