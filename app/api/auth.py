@@ -1,15 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import date, datetime
 
 from app.db import get_db
-from app import schemas
 from app.crud import auth as crud_auth
 
-from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from app.security import ACCESS_TOKEN_EXPIRE_MINUTES
-from sqlalchemy.orm import Session
-from app.db import get_db
 from app.security import verify_password, create_access_token
 from app import models, schemas
 
