@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.get("/{emp_no}/salaries", response_model=List[SalaryPeriod])
+@router.get("/{emp_no}/salaries", response_model=List[SalaryPeriod], dependencies=[Depends(get_current_user)])
 def get_employee_salaries(
     emp_no: int,
     start_date: date = Query(..., description="Start of period (YYYY-MM-DD)"),
