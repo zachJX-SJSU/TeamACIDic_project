@@ -31,6 +31,15 @@ class Employee(EmployeeBase):
     class Config:
         from_attributes = True
 
+# ---- Employee search  ----
+class EmployeeSearchResult(BaseModel):
+    emp_no: int
+    first_name: str
+    last_name: str
+    gender: str
+
+    class Config:
+        from_attributes = True
 
 # ---- Department ----
 
@@ -57,7 +66,7 @@ class Department(DepartmentBase):
 
 class LeaveRequestBase(BaseModel):
     emp_no: int
-    leave_type_id: Literal[0, 1, 2, 3]
+    leave_type_id: Literal[0, 1, 2]  # 0=paid, 1=unpaid, 2=sick
     start_date: date
     end_date: date
     employee_comment: Optional[str] = None
@@ -68,19 +77,25 @@ class LeaveRequestCreate(LeaveRequestBase):
 
 
 class LeaveRequestUpdate(BaseModel):
-    leave_type_id: Optional[Literal[0, 1, 2, 3]] = None
+    leave_type_id: Optional[Literal[0, 1, 2]] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
-    status: Optional[Literal["PENDING", "APPROVED", "REJECTED", "CANCELLED"]] = None
+    status: Optional[Literal["PENDING", "APPROVED", "REJECTED"]] = None
     manager_emp_no: Optional[int] = None
     employee_comment: Optional[str] = None
+    manager_comment: Optional[str] = None
+
+
+class LeaveRequestReview(BaseModel):
+    """Schema for manager to approve or reject a leave request"""
+    status: Literal["APPROVED", "REJECTED"]
     manager_comment: Optional[str] = None
 
 
 class LeaveRequest(LeaveRequestBase):
     leave_id: int
     days_requested: int
-    status: Literal["PENDING", "APPROVED", "REJECTED", "CANCELLED"]
+    status: Literal["PENDING", "APPROVED", "REJECTED"]
     requested_at: datetime
     decided_at: Optional[datetime] = None
     manager_emp_no: Optional[int] = None
@@ -95,7 +110,7 @@ class LeaveRequest(LeaveRequestBase):
 class LeaveQuotaBase(BaseModel):
     emp_no: int
     year: int
-    leave_type_id: Literal[2]
+    leave_type_id: Literal[0, 2]  # 0=paid, 2=sick
     annual_quota_days: int
 
 

@@ -1,8 +1,18 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import Base, engine
 from app.api import employees, departments, leave_requests, leave_quotas, auth,salary_routes
+
+# ----- Logging config -----
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
+)
+logger = logging.getLogger("hr_portal")
+# ---------------------------
 
 # Create DB tables if they do not exist yet.
 # In a real project you'd usually manage this via Alembic migrations instead.

@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 # mysql+pymysql://user:password@host:3306/employees
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "mysql+pymysql://hr_user:abc123@localhost:3306/employees",
+    "mysql+pymysql://hr_user:Abc123456@localhost:3306/employees",
 )
 
 engine = create_engine(

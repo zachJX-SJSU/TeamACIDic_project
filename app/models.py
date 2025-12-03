@@ -25,36 +25,23 @@ class Employee(Base):
     hire_date = Column(Date, nullable=False)
 
     # Relationships
-    # leave_requests = relationship(
-    #     "EmployeeLeaveRequest",
-    #     back_populates="employee",
-    #     cascade="all, delete-orphan", 
-    # )
-    # managed_leave_requests = relationship(
-    #     "EmployeeLeaveRequest",
-    #     back_populates="manager",
-    #     foreign_keys="EmployeeLeaveRequest.manager_emp_no",
-    # )
+    leave_requests = relationship(
+        "EmployeeLeaveRequest",
+        back_populates="employee",
+        foreign_keys="EmployeeLeaveRequest.emp_no",
+        cascade="all, delete-orphan",
+    )
+    managed_leave_requests = relationship(
+        "EmployeeLeaveRequest",
+        back_populates="manager",
+        foreign_keys="EmployeeLeaveRequest.manager_emp_no",
+    )
     leave_quotas = relationship(
         "EmployeeLeaveQuota",
         back_populates="employee",
         cascade="all, delete-orphan",
     )
-    salaries = relationship(
-        "Salary",
-        back_populates="employee",
-        cascade="all, delete-orphan",   # optional but nice
-    )
 
-class Salary(Base):
-    __tablename__ = "salaries"
-
-    emp_no = Column(Integer, ForeignKey("employees.emp_no"), primary_key=True)
-    from_date = Column(Date, primary_key=True)
-    salary = Column(Integer, nullable=False)
-    to_date = Column(Date, nullable=False)
-
-    employee = relationship("Employee", back_populates="salaries")
 
 class Department(Base):
     __tablename__ = "departments"
@@ -67,32 +54,34 @@ class EmployeeLeaveRequest(Base):
     __tablename__ = "employee_leave_requests"
 
     leave_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    # emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), nullable=False)
-    # leave_type_id = Column(SmallInteger, nullable=False)  # 0=paid,1=unpaid,2=sick,3=others
-    # start_date = Column(Date, nullable=False)
-    # end_date = Column(Date, nullable=False)
-    # days_requested = Column(Integer, nullable=False)
-    # status = Column(
-    #     Enum("PENDING", "APPROVED", "REJECTED", "CANCELLED", name="leave_status_enum"),
-    #     nullable=False,
-    #     default="PENDING",
-    # )
-    # requested_at = Column(DateTime, nullable=False)
-    # decided_at = Column(DateTime, nullable=True)
-    # manager_emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="SET NULL"), nullable=True)
-    # employee_comment = Column(String(255), nullable=True)
-    # manager_comment = Column(String(255), nullable=True)
+    emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), nullable=False)
+    leave_type_id = Column(SmallInteger, nullable=False)  # 0=paid, 1=unpaid, 2=sick
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
+    days_requested = Column(Integer, nullable=False)
+    # NOTE: use UPPERCASE values to align with existing MySQL ENUM definition
+    # in the employees_dev.sql seed data.
+    status = Column(
+        Enum("PENDING", "APPROVED", "REJECTED", "CANCELLED", name="leave_status_enum"),
+        nullable=False,
+        default="PENDING",
+    )
+    requested_at = Column(DateTime, nullable=False)
+    decided_at = Column(DateTime, nullable=True)
+    manager_emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="SET NULL"), nullable=True)
+    employee_comment = Column(String(255), nullable=True)
+    manager_comment = Column(String(255), nullable=True)
 
-    # employee = relationship("Employee", back_populates="leave_requests", foreign_keys=[emp_no])
-    # manager = relationship("Employee", back_populates="managed_leave_requests", foreign_keys=[manager_emp_no])
+    employee = relationship("Employee", back_populates="leave_requests", foreign_keys=[emp_no])
+    manager = relationship("Employee", back_populates="managed_leave_requests", foreign_keys=[manager_emp_no])
 
 
 class EmployeeLeaveQuota(Base):
     __tablename__ = "employee_leave_quota"
-
+    
     emp_no = Column(Integer, ForeignKey("employees.emp_no", ondelete="CASCADE"), primary_key=True)
     year = Column(Integer, primary_key=True)
-    leave_type_id = Column(SmallInteger, primary_key=True)  # 2 for sick leave
+    leave_type_id = Column(SmallInteger, primary_key=True)  # 0=paid, 2=sick
     annual_quota_days = Column(Integer, nullable=False)
 
     employee = relationship("Employee", back_populates="leave_quotas")
