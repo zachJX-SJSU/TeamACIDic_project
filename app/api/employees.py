@@ -69,7 +69,6 @@ def search_employees(
         .offset(offset)
         .all()
     )
-
     return employees
 
 @router.post("", response_model=schemas.Employee, status_code=201)

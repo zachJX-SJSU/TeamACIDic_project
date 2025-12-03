@@ -14,6 +14,14 @@ logging.basicConfig(
 logger = logging.getLogger("hr_portal")
 # ---------------------------
 
+# ----- Logging config -----
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
+)
+logger = logging.getLogger("hr_portal")
+# ---------------------------
+
 # Create DB tables if they do not exist yet.
 # In a real project you'd usually manage this via Alembic migrations instead.
 Base.metadata.create_all(bind=engine)

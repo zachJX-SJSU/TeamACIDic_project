@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+teamproj/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+test.db
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Reminder files
+REMEMBER_BEFORE_PUSH.txt
+
