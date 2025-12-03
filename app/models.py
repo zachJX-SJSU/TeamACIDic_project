@@ -41,6 +41,11 @@ class Employee(Base):
         back_populates="employee",
         cascade="all, delete-orphan",
     )
+    salaries = relationship(
+        "Salary",
+        back_populates="employee",
+        cascade="all, delete-orphan",
+    )
 
 
 class Department(Base):
@@ -97,3 +102,13 @@ class AuthUser(Base):
 
     # Link back to Employee (optional but convenient)
     employee = relationship("Employee")
+
+class Salary(Base):
+    __tablename__ = "salaries"
+
+    emp_no = Column(Integer, ForeignKey("employees.emp_no"), primary_key=True)
+    from_date = Column(Date, primary_key=True)
+    salary = Column(Integer, nullable=False)
+    to_date = Column(Date, nullable=False)
+
+    employee = relationship("Employee", back_populates="salaries")

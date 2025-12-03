@@ -141,3 +141,12 @@ class LoginResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# ---- Salary ----
+class SalaryPeriod(BaseModel):
+    salary: int
+    start_date: date
+    end_date: date
+
+    class Config:
+        from_attributes = True

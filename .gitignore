@@ -40,3 +40,4 @@ Thumbs.db
 # Reminder files
 REMEMBER_BEFORE_PUSH.txt
 
+./db.py

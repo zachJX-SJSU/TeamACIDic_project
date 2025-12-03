@@ -175,6 +175,7 @@ def create_leave_request(
         start_date=leave_in.start_date,
         end_date=leave_in.end_date,
         days_requested=days_requested,
+        # Use uppercase to align with DB ENUM values
         status="PENDING",
         requested_at=datetime.utcnow(),
         employee_comment=leave_in.employee_comment,
