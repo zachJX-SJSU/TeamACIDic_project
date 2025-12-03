@@ -2,10 +2,12 @@ from datetime import date, datetime
 from typing import List, Optional
 
 from fastapi import HTTPException, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.crud import leave_quotas
+from app.crud import employees
 
 
 def get_leave_request(db: Session, leave_id: int) -> Optional[models.EmployeeLeaveRequest]:
@@ -34,6 +36,57 @@ def get_leave_requests(
         .limit(limit)
         .all()
     )
+
+
+def get_employee_manager(db: Session, emp_no: int) -> Optional[int]:
+    """
+    Find the manager of an employee by looking up their CURRENT department
+    (latest assignment where to_date = '9999-01-01') and then finding 
+    the current manager of that department.
+    
+    Edge cases handled:
+    - Employee has no current department → returns None
+    - Multiple current departments → uses latest (ORDER BY from_date DESC)
+    - Department has no current manager → returns None
+    - Multiple current managers → uses latest (ORDER BY from_date DESC)
+    
+    Returns the manager's emp_no, or None if not found.
+    """
+    # Find employee's CURRENT department (active assignment)
+    # If multiple exist, get the one with the latest from_date
+    dept_query = text("""
+        SELECT dept_no 
+        FROM dept_emp 
+        WHERE emp_no = :emp_no 
+        AND to_date = '9999-01-01'
+        ORDER BY from_date DESC
+        LIMIT 1
+    """)
+    
+    result = db.execute(dept_query, {"emp_no": emp_no}).fetchone()
+    
+    if not result:
+        return None  # Employee has no current department
+    
+    dept_no = result[0]
+    
+    # Find current manager of that department
+    # If multiple managers exist (shouldn't happen for current), get the one with latest from_date
+    manager_query = text("""
+        SELECT emp_no 
+        FROM dept_manager 
+        WHERE dept_no = :dept_no 
+        AND to_date = '9999-01-01'
+        ORDER BY from_date DESC
+        LIMIT 1
+    """)
+    
+    manager_result = db.execute(manager_query, {"dept_no": dept_no}).fetchone()
+    
+    if not manager_result:
+        return None  # Department has no current manager
+    
+    return manager_result[0]
 
 
 def check_quota_availability(
@@ -66,14 +119,43 @@ def create_leave_request(
     db: Session, leave_in: schemas.LeaveRequestCreate
 ) -> models.EmployeeLeaveRequest:
     """
-    Create a leave request with quota validation.
-    Validates quota availability before creating the request.
-    Raises HTTPException with "Insufficient quota" if quota is not sufficient.
+    Create a leave request with quota validation and automatic manager assignment.
+    
+    Edge cases handled:
+    1. Invalid dates (end_date < start_date) → HTTPException 400
+    2. Employee doesn't exist → HTTPException 404
+    3. Employee has no current department → manager_emp_no = None
+    4. Department has no manager → manager_emp_no = None
+    5. Multiple current departments → uses latest
+    6. Quota validation for paid/sick leaves
+    7. Negative/zero days → prevented by date validation
     """
+    # EDGE CASE 1: Validate employee exists
+    employee = employees.get_employee(db, leave_in.emp_no)
+    if not employee:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Employee with emp_no {leave_in.emp_no} not found"
+        )
+    
+    # EDGE CASE 2: Validate dates
+    if leave_in.end_date < leave_in.start_date:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="end_date must be after or equal to start_date"
+        )
+    
     # Compute days_requested as inclusive difference.
     days_requested = (leave_in.end_date - leave_in.start_date).days + 1
     
-    # Validate quota availability (only for paid and sick leaves)
+    # EDGE CASE 3: Ensure positive days (shouldn't happen if dates are valid, but safeguard)
+    if days_requested <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Leave request must be for at least 1 day"
+        )
+    
+    # EDGE CASE 4: Validate quota availability (only for paid and sick leaves)
     if leave_in.leave_type_id in [0, 2]:  # paid or sick
         if not check_quota_availability(
             db, leave_in.emp_no, leave_in.leave_type_id, days_requested
@@ -83,16 +165,20 @@ def create_leave_request(
                 detail="Insufficient quota"
             )
     
+    # EDGE CASE 5: Find the employee's CURRENT manager automatically
+    # Returns None if employee has no department or department has no manager
+    manager_emp_no = get_employee_manager(db, leave_in.emp_no)
+    
     leave = models.EmployeeLeaveRequest(
         emp_no=leave_in.emp_no,
         leave_type_id=leave_in.leave_type_id,
         start_date=leave_in.start_date,
         end_date=leave_in.end_date,
         days_requested=days_requested,
-        # Use uppercase to align with DB ENUM values
         status="PENDING",
         requested_at=datetime.utcnow(),
         employee_comment=leave_in.employee_comment,
+        manager_emp_no=manager_emp_no,  # Set automatically (may be None if no manager found)
     )
     db.add(leave)
     db.commit()
