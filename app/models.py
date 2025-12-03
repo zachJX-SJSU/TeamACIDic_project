@@ -10,7 +10,7 @@ from sqlalchemy import (
     SmallInteger,
 )
 from sqlalchemy.orm import relationship
-
+from sqlalchemy import PrimaryKeyConstraint
 from .db import Base
 
 
