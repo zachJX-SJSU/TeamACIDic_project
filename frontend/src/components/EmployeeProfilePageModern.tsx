@@ -314,15 +314,13 @@ const EmployeeProfilePageModern: React.FC<EmployeeProfilePageProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {salaries.map((s, idx) => (
-                  <tr key={`${s.emp_no}-${s.from_date}`} className={idx % 2 === 0 ? "bg-gray-50" : ""}>
-                    <td className="py-3 px-4 text-sm text-gray-900">{s.from_date}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{s.to_date}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-right font-semibold">
-                      ${s.salary.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
+                <tr>
+                  <td className="py-3 px-4 text-sm text-gray-900">{fromDate || '-'}</td>
+                  <td className="py-3 px-4 text-sm text-gray-900">{toDate || '-'}</td>
+                  <td className="py-3 px-4 text-sm text-gray-900 text-right font-semibold">
+                    ${salaries.reduce((sum, s) => sum + s.salary, 0).toLocaleString()}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
