@@ -43,3 +43,9 @@ export interface UpdateLeaveRequestPayload {
   manager_emp_no: number;
   manager_comment?: string;
 }
+
+export interface SalaryPeriod {
+  salary: number;
+  start_date: string;
+  end_date: string;
+}

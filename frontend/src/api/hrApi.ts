@@ -14,14 +14,16 @@ export async function fetchEmployee(empNo: number): Promise<Employee> {
 
 export async function fetchSalaries(
   empNo: number,
-  fromDate?: string,
-  toDate?: string
+  startDate?: string,
+  endDate?: string
 ): Promise<Salary[]> {
-  const params: Record<string, string | number> = { emp_no: empNo };
-  if (fromDate) params.from_date = fromDate;
-  if (toDate) params.to_date = toDate;
+  // const params: Record<string, string | number> = { emp_no: empNo };
+  const params: Record<string, string> = {};
+  if (startDate) params.start_date = startDate; 
+  if (endDate) params.end_date = endDate;
 
-  const res = await api.get<Salary[]>("/salaries", { params });
+  // const res = await api.get<Salary[]>("/salaries", { params });
+  const res = await api.get<Salary[]>(`/salaries/${empNo}`, { params });
   return res.data;
 }
 

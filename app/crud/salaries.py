@@ -1,13 +1,13 @@
 from datetime import date
 from sqlalchemy.orm import Session
 from app.models import Salary
+from typing import Optional
 
 def get_salaries_for_period(
     db: Session,
     emp_no: int,
     start_date: date,
-    end_date: date,
-):
+    end_date: Optional[date]):
     """
     Return all salary rows for emp_no that overlap [start_date, end_date].
     """

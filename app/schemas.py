@@ -155,7 +155,7 @@ class LoginResponse(BaseModel):
 class SalaryPeriod(BaseModel):
     salary: int
     start_date: date
-    end_date: date
+    end_date: Optional[date] = None
 
     class Config:
         from_attributes = True
