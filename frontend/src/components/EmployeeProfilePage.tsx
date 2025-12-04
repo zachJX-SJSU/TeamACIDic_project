@@ -17,7 +17,7 @@ import {
 } from "../api/hrApi";
 
 
-const [salaries, setSalaries] = useState<SalaryPeriod[]>([]);
+//const [salaries, setSalaries] = useState<SalaryPeriod[]>([]);
 
 interface EmployeeProfilePageProps {
   empNo: number;      // logged-in employee's emp_no
@@ -35,7 +35,7 @@ const EmployeeProfilePage: React.FC<EmployeeProfilePageProps> = ({
   // Salary range
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
-  const [salaries, setSalaries] = useState<Salary[]>([]);
+  const [salaries, setSalaries] = useState<SalaryPeriod[]>([]);
   const [loadingSalaries, setLoadingSalaries] = useState(false);
 
   // My leave requests
