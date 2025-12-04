@@ -41,3 +41,7 @@ Thumbs.db
 REMEMBER_BEFORE_PUSH.txt
 
 ./db.py
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
