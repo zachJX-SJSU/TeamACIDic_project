@@ -5,9 +5,11 @@ import ChangePasswordModal from "./ChangePasswordModal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  currentPage?: string;
+  onNavigate?: (page: string) => void;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, currentPage = "profile", onNavigate }) => {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -51,28 +53,30 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {/* Navigation */}
           <ul className="space-y-2 font-medium">
             <li>
-              <a href="#" className="flex items-center gap-3 px-4 py-3 text-white bg-white/20 rounded-lg">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                <span>Dashboard</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center gap-3 px-4 py-3 text-primary-100 hover:bg-white/10 rounded-lg transition-colors">
+              <button
+                onClick={() => onNavigate?.("profile")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  currentPage === "profile" ? "text-white bg-white/20" : "text-primary-100 hover:bg-white/10"
+                }`}
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <span>My Profile</span>
-              </a>
+              </button>
             </li>
             <li>
-              <a href="#" className="flex items-center gap-3 px-4 py-3 text-primary-100 hover:bg-white/10 rounded-lg transition-colors">
+              <button
+                onClick={() => onNavigate?.("search")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  currentPage === "search" ? "text-white bg-white/20" : "text-primary-100 hover:bg-white/10"
+                }`}
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span>Leave Requests</span>
-              </a>
+                <span>Search Employees</span>
+              </button>
             </li>
             {user?.isManager && (
               <>
@@ -99,22 +103,28 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </li>
               </>
             )}
-            <li>
-              <a href="#" className="flex items-center gap-3 px-4 py-3 text-primary-100 hover:bg-white/10 rounded-lg transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Salary Info</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center gap-3 px-4 py-3 text-primary-100 hover:bg-white/10 rounded-lg transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span>Reports</span>
-              </a>
-            </li>
+            {user?.isHrAdmin && (
+              <>
+                <li className="pt-4 mt-4 border-t border-primary-500">
+                  <p className="px-4 text-xs font-semibold text-primary-200 uppercase tracking-wider mb-2">
+                    HR Admin
+                  </p>
+                </li>
+                <li>
+                  <button
+                    onClick={() => onNavigate?.("hr-management")}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      currentPage === "hr-management" ? "text-white bg-white/20" : "text-primary-100 hover:bg-white/10"
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>Employee Management</span>
+                  </button>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       </aside>
