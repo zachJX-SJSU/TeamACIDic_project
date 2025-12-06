@@ -6,6 +6,11 @@ export interface TokenResponse {
   token_type: string;
 }
 
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+}
+
 // This matches FastAPI's OAuth2PasswordRequestForm: form-encoded body
 export async function login(username: string, password: string): Promise<TokenResponse> {
   const form = new URLSearchParams();
@@ -16,5 +21,10 @@ export async function login(username: string, password: string): Promise<TokenRe
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   });
 
+  return res.data;
+}
+
+export async function changePassword(data: ChangePasswordRequest): Promise<{ message: string }> {
+  const res = await api.post<{ message: string }>("/auth/change-password", data);
   return res.data;
 }

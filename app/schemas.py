@@ -169,3 +169,7 @@ class TokenData(BaseModel):
     emp_no: int
     is_manager: bool
     is_hr_admin: bool
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=6, max_length=12)
