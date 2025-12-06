@@ -128,9 +128,10 @@ const EmployeeProfilePageModern: React.FC<EmployeeProfilePageProps> = ({
       setNewLeaveEnd("");
       setNewLeaveComment("");
       loadMyLeaves();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to create leave request.");
+    } catch (err: any) {
+      console.error("Leave request error:", err);
+      const errorMsg = err.response?.data?.detail || err.message || "Failed to create leave request.";
+      alert(`Failed to create leave request: ${errorMsg}`);
     }
   };
 
