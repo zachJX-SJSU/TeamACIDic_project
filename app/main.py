@@ -4,7 +4,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import Base, engine
-from app.api import employees, departments, leave_requests, leave_quotas, auth
+from app.api import employees, departments, leave_requests, leave_quotas, auth,salary_routes
+
+# ----- Logging config -----
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s - %(message)s",
+)
+logger = logging.getLogger("hr_portal")
+# ---------------------------
 
 # ----- Logging config -----
 logging.basicConfig(
@@ -23,6 +31,12 @@ app = FastAPI(
     version="1.0.0",
 )
 
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://54.219.163.78:5173",
+]
+
 # Configure CORS for your React frontend (adjust origins in real deployment).
 app.add_middleware(
     CORSMiddleware,
@@ -38,6 +52,7 @@ app.include_router(departments.router)
 app.include_router(leave_requests.router)
 app.include_router(leave_quotas.router)
 app.include_router(auth.router)
+app.include_router(salary_routes.router)
 
 
 @app.get("/")
