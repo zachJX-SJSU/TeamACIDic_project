@@ -51,6 +51,16 @@ def change_user_password(db: Session, emp_no: int, current_password: str, new_pa
     if not user.is_active:
         return False, "User account is inactive"
     
+    # Validate new password length (6-12 characters)
+    if len(new_password) < 6 or len(new_password) > 12:
+        return False, "Password must be between 6 and 12 characters"
+    
+    # Validate password contains both letters and numbers
+    has_letter = any(c.isalpha() for c in new_password)
+    has_number = any(c.isdigit() for c in new_password)
+    if not (has_letter and has_number):
+        return False, "Password must contain both letters and numbers"
+    
     # Verify current password
     if not verify_password(current_password, user.password_hash):
         return False, "Current password is incorrect"
