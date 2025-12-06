@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+teamproj/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+test.db
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+README.md
+
+# Reminder files
+REMEMBER_BEFORE_PUSH.txt
+
+# Frontend (not needed for backend container)
+frontend/
+
+# Images
+images/
+
+# Test files
+tests/
+
+# Database files (keep employees_dev.sql for initialization)
+*.sql
+!employees_dev.sql
+schema.sql
+
