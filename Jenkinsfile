@@ -1,80 +1,63 @@
 pipeline {
   agent any
 
-  environment {
-    VENV_PATH = '.venv'
-    PYTHON = 'python3'
-    PIP = "${VENV_PATH}/bin/pip"
-    PYTEST = "${VENV_PATH}/bin/pytest"
-    REPORT_DIR = 'reports'
-  }
-
-  options {
-    skipDefaultCheckout false
-  }
-
   stages {
     stage('Checkout') {
       steps {
-        echo "Checking out source code from ${GIT_BRANCH}"
+        echo "=== Checking out code ==="
         checkout scm
+        sh 'pwd && ls -la'
       }
     }
 
-    stage('Prepare Python') {
+    stage('Test Python') {
       steps {
-        echo "Setting up Python environment..."
+        echo "=== Testing Python availability ==="
         sh '''
-          # ensure python exists
-          ${PYTHON} --version
-          # create venv if missing
-          [ -d ${VENV_PATH} ] || ${PYTHON} -m venv ${VENV_PATH}
-          . ${VENV_PATH}/bin/activate
-          ${PIP} install --upgrade pip
-          ${PIP} install -r requirements.txt
+          which python3
+          python3 --version
+          which pip3
+          pip3 --version
         '''
       }
     }
 
-    stage('Clean test DB') {
+    stage('Setup Venv') {
       steps {
-        echo "Cleaning up test database..."
+        echo "=== Setting up virtual environment ==="
         sh '''
-          rm -f test.db
-          mkdir -p ${REPORT_DIR}
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
         '''
       }
     }
 
-    stage('Run tests') {
+    stage('Run Tests') {
       steps {
-        echo "Running pytest with coverage..."
+        echo "=== Running tests ==="
         sh '''
-          . ${VENV_PATH}/bin/activate
-          ${PYTEST} --junitxml=${REPORT_DIR}/junit.xml --cov=app --cov-report=xml:${REPORT_DIR}/coverage.xml -v
+          . venv/bin/activate
+          mkdir -p reports
+          pytest tests/test_employees.py -v --tb=short --junitxml=reports/junit.xml
         '''
       }
     }
 
-    stage('Publish results') {
+    stage('Publish') {
       steps {
-        echo "Publishing test results..."
-        junit "${REPORT_DIR}/junit.xml"
-        archiveArtifacts artifacts: "${REPORT_DIR}/*", fingerprint: true
+        echo "=== Publishing results ==="
+        junit 'reports/junit.xml'
+        archiveArtifacts artifacts: 'reports/*', allowEmptyArchive: true
       }
     }
   }
 
   post {
     always {
-      sh 'ls -la ${REPORT_DIR} || true'
-      junit 'reports/junit.xml'
-    }
-    success {
-      echo "✅ Build succeeded! All tests passed."
-    }
-    failure {
-      echo "❌ Build failed! Check console output for details."
+      echo "=== Build completed ==="
+      sh 'ls -la reports/ || echo "No reports directory"'
     }
   }
 }
