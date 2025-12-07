@@ -8,6 +8,7 @@ passlib[bcrypt]==1.7.4
 bcrypt==3.2.2
 cryptography
 python-multipart
+python-jose[cryptography]
 
 # Testing
 pytest
