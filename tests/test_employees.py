@@ -8,6 +8,9 @@ def test_create_employee(client):
         "last_name": "Smith",
         "gender": "M",
         "hire_date": "2020-01-01",
+        "dept_no": "d005",
+        "title": "Engineer",
+        "starting_salary": 60000,
     }
     response = client.post("/employees", json=payload)
     assert response.status_code == 201
@@ -38,6 +41,9 @@ def test_get_employee_by_id(client):
         "last_name": "Brown",
         "gender": "F",
         "hire_date": "2021-02-02",
+        "dept_no": "d005",
+        "title": "Analyst",
+        "starting_salary": 55000,
     }
     created = client.post("/employees", json=payload).json()
     emp_no = created["emp_no"]
@@ -58,6 +64,9 @@ def test_update_employee(client):
         "last_name": "Taylor",
         "gender": "M",
         "hire_date": "2022-03-03",
+        "dept_no": "d005",
+        "title": "Manager",
+        "starting_salary": 70000,
     }
     created = client.post("/employees", json=payload).json()
     emp_no = created["emp_no"]
@@ -79,6 +88,9 @@ def test_delete_employee(client):
         "last_name": "Lee",
         "gender": "F",
         "hire_date": "2023-04-04",
+        "dept_no": "d005",
+        "title": "Developer",
+        "starting_salary": 65000,
     }
     created = client.post("/employees", json=payload).json()
     emp_no = created["emp_no"]
