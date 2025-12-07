@@ -51,7 +51,6 @@ pipeline {
     stage('Publish results') {
       steps {
         junit "${REPORT_DIR}/junit.xml"
-        // If you have Cobertura or a coverage plugin installed you can publish coverage here.
         archiveArtifacts artifacts: "${REPORT_DIR}/*", fingerprint: true
       }
     }
@@ -60,48 +59,7 @@ pipeline {
   post {
     always {
       sh 'ls -la ${REPORT_DIR} || true'
-      // keep junit visible even if earlier stage failed
       junit 'reports/junit.xml'
     }
   }
-}
-pipeline {
-    agent any   // run on any Jenkins agent/node
-
-    stages {
-        stage('Checkout') {
-            steps {
-                // Pull your code from Git
-                git branch: 'main', url: 'https://github.com/zachJX-SJSU/TeamACIDic_project.git'
-            }
-        }
-
-        stage('Set up Python env') {
-            steps {
-                sh """
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                """
-            }
-        }
-
-        stage('Run tests') {
-            steps {
-                sh """
-                . venv/bin/activate
-                mkdir -p reports
-                pytest --junitxml=reports/backend-test-results.xml
-                """
-            }
-        }
-    }
-
-    post {
-        always {
-            // Tell Jenkins where the test report is
-            junit 'reports/backend-test-results.xml'
-        }
-    }
 }
