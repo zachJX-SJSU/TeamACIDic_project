@@ -44,16 +44,26 @@ if [ $attempt -eq $max_attempts ]; then
     exit 1
 fi
 
+echo "Creating database tables if they don't exist..."
+# Import models to register them with Base.metadata, then create tables
+python3 -c "from app.db import Base, engine; import app.models; Base.metadata.create_all(bind=engine); print('Tables created successfully')" || {
+    echo "WARNING: Failed to create tables (might already exist)"
+}
+
 echo "Running backfill scripts..."
 
 # Run backfill scripts (they are idempotent - safe to re-run)
-python3 -m scripts.backfill_auth_users || {
+echo "Running backfill_auth_users..."
+python3 -m scripts.backfill_auth_users 2>&1 || {
     echo "WARNING: backfill_auth_users failed (might already be populated)"
 }
 
-python3 -m scripts.backfill_leave_quotas || {
+echo "Running backfill_leave_quotas..."
+python3 -m scripts.backfill_leave_quotas 2>&1 || {
     echo "WARNING: backfill_leave_quotas failed (might already be populated)"
 }
+
+echo "Backfill scripts execution completed."
 
 echo "Backfill scripts completed. Starting API server..."
 
