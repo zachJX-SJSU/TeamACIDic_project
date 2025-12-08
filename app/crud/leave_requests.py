@@ -22,6 +22,7 @@ def get_leave_requests(
     db: Session,
     emp_no: Optional[int] = None,
     status: Optional[str] = None,
+    manager_emp_no: Optional[int] = None,
     skip: int = 0,
     limit: int = 50,
 ) -> List[models.EmployeeLeaveRequest]:
@@ -30,6 +31,8 @@ def get_leave_requests(
         q = q.filter(models.EmployeeLeaveRequest.emp_no == emp_no)
     if status is not None:
         q = q.filter(models.EmployeeLeaveRequest.status == status)
+    if manager_emp_no is not None:
+        q = q.filter(models.EmployeeLeaveRequest.manager_emp_no == manager_emp_no)
     return (
         q.order_by(models.EmployeeLeaveRequest.requested_at.desc())
         .offset(skip)
@@ -270,6 +273,7 @@ def review_leave_request(
     """
     Manager reviews (approves or rejects) a leave request.
     If approved, quota is automatically deducted.
+    Allows self-approval when the requester is a manager of their own department.
     """
     leave_request = get_leave_request(db, leave_id)
     
@@ -284,6 +288,19 @@ def review_leave_request(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Leave request is already {leave_request.status}"
         )
+    
+    # Validate that the manager_emp_no matches the assigned manager or is the requester (for self-approval)
+    if leave_request.manager_emp_no is not None:
+        # Allow review if:
+        # 1. The manager_emp_no matches the assigned manager, OR
+        # 2. The manager_emp_no is the requester themselves (self-approval case)
+        if manager_emp_no != leave_request.manager_emp_no and manager_emp_no != leave_request.emp_no:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Only the assigned manager (emp_no={leave_request.manager_emp_no}) or the requester themselves can review this request"
+            )
+    # If no manager was assigned, allow the requester to self-approve or allow any manager_emp_no
+    # (for backward compatibility with requests that have no assigned manager)
     
     # Update the request
     leave_request.status = review_in.status
