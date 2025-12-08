@@ -34,6 +34,10 @@ services:
     environment:
       DATABASE_URL: mysql+pymysql://${MYSQL_USER:-hr_user}:${MYSQL_PASSWORD:-abc123}@mysql:3306/${MYSQL_DATABASE:-employees}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-secret-key-change-in-production}
+      MYSQL_HOST: mysql
+      MYSQL_USER: ${MYSQL_USER:-hr_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-abc123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-employees}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
@@ -51,7 +55,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
 volumes:
   mysql_data:
